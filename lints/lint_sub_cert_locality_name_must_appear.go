@@ -19,12 +19,13 @@ func (l *subCertLocalityNameMustAppear) CheckApplies(c *x509.Certificate) bool {
 }
 
 func (l *subCertLocalityNameMustAppear) RunTest(c *x509.Certificate) (ResultStruct, error) {
-	//If all fields are absent
-	if c.Subject.GivenName == "" && len(c.Subject.Organization) == 0 && c.Subject.Surname == "" {
-		if len(c.Subject.StreetAddress) > 0 {
-			return ResultStruct{Result: Error}, nil
-		} else {
-			return ResultStruct{Result: Pass}, nil
+	if c.Subject.GivenName != "" || len(c.Subject.Organization) > 0 || c.Subject.Surname != "" {
+		if len(c.Subject.Province) == 0 {
+			if len(c.Subject.Locality) == 0 {
+				return ResultStruct{Result: Error}, nil
+			} else {
+				return ResultStruct{Result: Pass}, nil
+			}
 		}
 	}
 	return ResultStruct{Result: NA}, nil
@@ -32,12 +33,12 @@ func (l *subCertLocalityNameMustAppear) RunTest(c *x509.Certificate) (ResultStru
 
 func init() {
 	RegisterLint(&Lint{
-		Name:          "e_sub_cert_street_address_should_not_exist",
-		Description:   "Subscriber Certificate: subject:streetAddress MUST NOT appear if subject:organizationName, subject:givenName, and subject:surname fields are absent.",
+		Name:          "e_sub_cert_locality_name_must_appear",
+		Description:   "Subscriber Certificate: subject:localityName MUST appear if subject:organizationName, subject:givenName, or subject:surname fields are present but the subject:stateOrProvinceName field is absent..",
 		Providence:    "CAB: 7.1.4.2.2",
 		EffectiveDate: util.CABEffectiveDate,
-		Test:          &subCertStreetAddressShouldNotExist{},
-		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCertStreetAddressShouldNotExist = result },
+		Test:          &subCertLocalityNameMustAppear{},
+		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCertLocalityNameMustAppear = result },
 	})
 }
 

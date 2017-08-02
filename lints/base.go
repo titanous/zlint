@@ -236,6 +236,10 @@ type LintReport struct {
 	ESubCaEKUMissing				     ResultStruct `json:"e_sub_ca_eku_missing"`
 	ESubCertGivenNameSurnameContainsPolicy		     ResultStruct `json:"e_sub_cert_givename_surname_contains_correct_policy_id"`
 	ESubCertStreetAddressShouldNotExist		     ResultStruct `json:"e_sub_cert_street_address_should_not_exist"`
+	ESubCertLocalityNameMustAppear			     ResultStruct `json:"e_sub_cert_locality_name_must_appear"`
+	ESubCertLocalityNameMustNotAppear		     ResultStruct `json:"e_sub_cert_locality_name_must_not_appear"`
+	ESubCertProvinceMustAppear			     ResultStruct `json:"e_sub_cert_province_must_appear"`
+	ESubCertProvinceMustNotAppear			     ResultStruct `json:"e_sub_cert_province_must_not_appear"`
 }
 
 func (result *ZLintResult) Execute(cert *x509.Certificate) error {
