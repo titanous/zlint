@@ -20,6 +20,9 @@ func IsFQDN(domain string) bool {
 	if strings.HasPrefix(domain, "*.") {
 		domain = domain[2:]
 	}
+	if strings.Contains(domain, "://") {
+		return false
+	}
 	return govalidator.IsURL(domain)
 }
 
