@@ -54,7 +54,7 @@ type LintReport struct {
 	ECabOvRequiresOrg                                    ResultStruct `json:"e_cab_ov_requires_org,omitempty"`
 	ECabIvRequiresPersonalName                           ResultStruct `json:"e_cab_iv_requires_personal_name,omitempty"`
 	ECertUniqueIdentifierVersionNot_2Or_3                ResultStruct `json:"e_cert_unique_identifier_version_not_2_or_3,omitempty"`
-	EDhParamsMissing                                     ResultStruct `json:"e_dh_params_missing,omitempty"`
+	EDSAParamsMissing                                     ResultStruct `json:"e_dh_params_missing,omitempty"`
 	EDistributionPointIncomplete                         ResultStruct `json:"e_distribution_point_incomplete,omitempty"`
 	WDistributionPointMissingLdapOrUri                   ResultStruct `json:"w_distribution_point_missing_ldap_or_uri,omitempty"`
 	EDsaImproperModulusOrDivisorSize                     ResultStruct `json:"e_dsa_improper_modulus_or_divisor_size,omitempty"`
@@ -224,6 +224,18 @@ type LintReport struct {
 	ESubjectStateNameMaxLength                           ResultStruct `json:"e_subject_state_name_max_length"`
 	WMultipleIssuer_RDN                                  ResultStruct `json:"w_multiple_issuer_rdn,omitempty"`
 	WMultipleSubject_RDN                                 ResultStruct `json:"w_multiple_subject_rdn,omitempty"`
+	ESignatureAlgorithmNotSupported			     ResultStruct `json:"e_signature_algorithm_not_supported,omitempty"`
+	ECaIsCaIsTrue					     ResultStruct `json:"e_ca_is_ca_is_true"`
+	ERootCaKeyUsagePresent				     ResultStruct `json:"e_root_ca_key_usage_present"`
+	ERootCaKeyUsageMustBeCritical			     ResultStruct `json:"e_root_ca_key_usage_must_be_critical"`
+	ESubCaAIAMarkedCritical				     ResultStruct `json:"e_sub_ca_aia_marked_critical"`
+	ESubCaEkuValidFields				     ResultStruct `json:"e_sub_ca_eku_valid_fields"`
+	ESubCertAIAMarkedCritical			     ResultStruct `json:"e_sub_cert_aia_marked_critical"`
+	ESubCertBasicConstraintsCaFalse			     ResultStruct `json:"e_sub_cert_basic_constraints_ca_false"`
+	ECaCommonNameMissing				     ResultStruct `json:"e_ca_common_name_missing"`
+	ESubCaEKUMissing				     ResultStruct `json:"e_sub_ca_eku_missing"`
+	ESubCertGivenNameSurnameContainsPolicy		     ResultStruct `json:"e_sub_cert_givename_surname_contains_correct_policy_id"`
+	ESubCertStreetAddressShouldNotExist		     ResultStruct `json:"e_sub_cert_street_address_should_not_exist"`
 }
 
 func (result *ZLintResult) Execute(cert *x509.Certificate) error {

@@ -25,7 +25,7 @@ func (l *subCertAiaMissing) Initialize() error {
 
 func (l *subCertAiaMissing) CheckApplies(c *x509.Certificate) bool {
 	// Add conditions for application here
-	return !util.IsCACert(c)
+	return util.IsSubscriberCert(c)
 }
 
 func (l *subCertAiaMissing) RunTest(c *x509.Certificate) (ResultStruct, error) {

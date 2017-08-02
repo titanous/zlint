@@ -12,6 +12,7 @@ package lints
 import (
 	"github.com/zmap/zcrypto/x509"
 	"github.com/zmap/zlint/util"
+	"strings"
 )
 
 type subCaOcspUrl struct {
@@ -24,15 +25,16 @@ func (l *subCaOcspUrl) Initialize() error {
 
 func (l *subCaOcspUrl) CheckApplies(c *x509.Certificate) bool {
 	// Add conditions for application here
-	return util.IsCACert(c) && !util.IsRootCA(c)
+	return util.IsSubCA(c)
 }
 
 func (l *subCaOcspUrl) RunTest(c *x509.Certificate) (ResultStruct, error) {
-	if c.OCSPServer != nil {
-		return ResultStruct{Result: Pass}, nil
-	} else {
-		return ResultStruct{Result: Error}, nil
+	for _, server := range c.OCSPServer {
+		if strings.Contains(server, "http://") {
+			return ResultStruct{Result: Pass}, nil
+		}
 	}
+	return ResultStruct{Result: Error}, nil
 }
 
 func init() {

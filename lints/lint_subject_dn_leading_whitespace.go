@@ -5,6 +5,7 @@ package lints
 import (
 	"github.com/zmap/zcrypto/x509"
 	"github.com/zmap/zlint/util"
+	"fmt"
 )
 
 type SubjectDNLeadingSpace struct{}
@@ -18,6 +19,7 @@ func (l *SubjectDNLeadingSpace) CheckApplies(c *x509.Certificate) bool {
 }
 
 func (l *SubjectDNLeadingSpace) RunTest(c *x509.Certificate) (ResultStruct, error) {
+	fmt.Println(c.Subject.CommonName)
 	leading, _, err := util.CheckRDNSequenceWhiteSpace(c.RawSubject)
 	if err != nil {
 		return ResultStruct{Result: Fatal}, err

@@ -23,7 +23,7 @@ func (l *subCertPolicyEmpty) Initialize() error {
 }
 
 func (l *subCertPolicyEmpty) CheckApplies(c *x509.Certificate) bool {
-	return !util.IsCACert(c)
+	return util.IsSubscriberCert(c)
 }
 
 func (l *subCertPolicyEmpty) RunTest(c *x509.Certificate) (ResultStruct, error) {

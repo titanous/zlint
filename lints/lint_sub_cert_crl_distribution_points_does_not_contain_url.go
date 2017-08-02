@@ -24,13 +24,13 @@ func (l *subCRLDistNoURL) Initialize() error {
 
 func (l *subCRLDistNoURL) CheckApplies(c *x509.Certificate) bool {
 	// Add conditions for application here
-	return util.IsExtInCert(c, util.CrlDistOID)
+	return util.IsSubscriberCert(c) && util.IsExtInCert(c, util.CrlDistOID)
 }
 
 func (l *subCRLDistNoURL) RunTest(c *x509.Certificate) (ResultStruct, error) {
 	// Add actual lint here
 	for _, s := range c.CRLDistributionPoints {
-		if strings.Contains(s, "http") {
+		if strings.Contains(s, "http://") {
 			return ResultStruct{Result: Pass}, nil
 		}
 	}
