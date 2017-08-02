@@ -22,7 +22,7 @@ func (l *subCertProvinceMustNotAppear) RunTest(c *x509.Certificate) (ResultStruc
 	if c.Subject.GivenName == "" && len(c.Subject.Organization) == 0 && c.Subject.Surname == "" {
 		if len(c.Subject.Province) > 0 {
 			return ResultStruct{Result: Error}, nil
-		} else{
+		} else {
 			return ResultStruct{Result: Pass}, nil
 		}
 	}

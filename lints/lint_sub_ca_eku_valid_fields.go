@@ -40,4 +40,3 @@ func init() {
 		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCaEkuValidFields = result },
 	})
 }
-

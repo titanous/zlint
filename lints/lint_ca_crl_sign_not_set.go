@@ -26,7 +26,7 @@ func (l *caCRLSignNotSet) CheckApplies(c *x509.Certificate) bool {
 }
 
 func (l *caCRLSignNotSet) RunTest(c *x509.Certificate) (ResultStruct, error) {
-	if c.KeyUsage & x509.KeyUsageCRLSign != 0 {
+	if c.KeyUsage&x509.KeyUsageCRLSign != 0 {
 		return ResultStruct{Result: Pass}, nil
 	} else {
 		return ResultStruct{Result: Error}, nil

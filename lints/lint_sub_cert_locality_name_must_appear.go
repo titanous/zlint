@@ -41,4 +41,3 @@ func init() {
 		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCertLocalityNameMustAppear = result },
 	})
 }
-

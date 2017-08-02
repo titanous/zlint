@@ -21,6 +21,7 @@ var (
 	CABV116Date      = time.Date(2013, time.July, 29, 0, 0, 0, 0, time.UTC)
 	CABV130Date      = time.Date(2015, time.April, 16, 0, 0, 0, 0, time.UTC)
 	CABV131Date      = time.Date(2015, time.September, 28, 0, 0, 0, 0, time.UTC)
+	CABSeptember     = time.Date(2016, time.September, 30, 0, 0, 0, 0, time.UTC)
 	NO_SHA1          = time.Date(2016, time.January, 1, 0, 0, 0, 0, time.UTC)
 	RsaDate          = time.Date(2010, time.December, 31, 0, 0, 0, 0, time.UTC)
 	RsaDate2         = time.Date(2011, time.January, 1, 0, 0, 0, 0, time.UTC)

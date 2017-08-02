@@ -37,4 +37,3 @@ func init() {
 		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCaMustNotContainAnyPolicy = result },
 	})
 }
-

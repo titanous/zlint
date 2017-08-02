@@ -36,4 +36,3 @@ func init() {
 		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCertBasicConstraintsCaFalse = result },
 	})
 }
-

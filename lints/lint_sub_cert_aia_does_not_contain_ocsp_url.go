@@ -30,7 +30,7 @@ func (l *subCertOcspUrl) CheckApplies(c *x509.Certificate) bool {
 }
 
 func (l *subCertOcspUrl) RunTest(c *x509.Certificate) (ResultStruct, error) {
-	for _, server :=  range c.OCSPServer {
+	for _, server := range c.OCSPServer {
 		if strings.Contains(server, "http://") {
 			return ResultStruct{Result: Pass}, nil
 		}

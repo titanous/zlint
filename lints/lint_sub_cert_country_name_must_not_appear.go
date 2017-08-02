@@ -39,6 +39,3 @@ func init() {
 		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCertCountryNameMustNotAppear = result },
 	})
 }
-
-
-

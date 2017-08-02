@@ -22,7 +22,7 @@ func (l *subCertPostalCodeMustNotAppear) RunTest(c *x509.Certificate) (ResultStr
 	if c.Subject.GivenName == "" && len(c.Subject.Organization) == 0 && c.Subject.Surname == "" {
 		if len(c.Subject.PostalCode) > 0 {
 			return ResultStruct{Result: Error}, nil
-		} else{
+		} else {
 			return ResultStruct{Result: Pass}, nil
 		}
 	}
@@ -39,4 +39,3 @@ func init() {
 		updateReport:  func(report *LintReport, result ResultStruct) { report.ESubCertPostalCodeMustNotAppear = result },
 	})
 }
-
