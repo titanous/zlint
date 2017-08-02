@@ -3,7 +3,6 @@ package lints
 import (
 	"github.com/zmap/zcrypto/x509"
 	"github.com/zmap/zlint/util"
-	"fmt"
 )
 
 type subCAEKUNameConstraints struct {
@@ -29,7 +28,6 @@ func includesNameConstraints(c *x509.Certificate) bool {
 
 func (l *subCAEKUNameConstraints) RunTest(c *x509.Certificate) (ResultStruct, error) {
 	for _, eku := range c.ExtKeyUsage {
-		fmt.Println(eku)
 		if eku == x509.ExtKeyUsageServerAuth {
 			if includesNameConstraints(c) {
 				return ResultStruct{Result: Pass}, nil
