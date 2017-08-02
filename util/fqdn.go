@@ -23,6 +23,9 @@ func IsFQDN(domain string) bool {
 	if strings.Contains(domain, "://") {
 		return false
 	}
+	if strings.Contains(domain, "/") {
+		return false
+	}
 	return govalidator.IsURL(domain)
 }
 
