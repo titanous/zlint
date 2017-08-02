@@ -34,7 +34,7 @@ func (l *subCaIssuerUrl) RunTest(c *x509.Certificate) (ResultStruct, error) {
 			return ResultStruct{Result: Pass}, nil
 		}
 	}
-	return ResultStruct{Result: Error}, nil
+	return ResultStruct{Result: Warn}, nil
 }
 
 func init() {
