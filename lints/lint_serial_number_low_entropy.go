@@ -3,6 +3,7 @@ package lints
 import (
 	"github.com/zmap/zcrypto/x509"
 	"github.com/zmap/zlint/util"
+	"fmt"
 )
 
 type serialNumberLowEntropy struct {
@@ -19,7 +20,7 @@ func (l *serialNumberLowEntropy) CheckApplies(c *x509.Certificate) bool {
 }
 
 func (l *serialNumberLowEntropy) RunTest(c *x509.Certificate) (ResultStruct, error) {
-	if c.SerialNumber.BitLen() < 64 {
+	if len(c.SerialNumber.Bytes()) < 8 {
 		return ResultStruct{Result: Error}, nil
 	} else {
 		return ResultStruct{Result: Pass}, nil
