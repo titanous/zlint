@@ -36,7 +36,7 @@ func init() {
 	flag.BoolVar(&prettyPrint, "list-lints-json", false, "Use this flag to print supported lints in JSON format, one per line")
 	flag.IntVar(&numCertThreads, "cert-threads", 1, "Use this flag to specify the number of threads in -threads mode.  This has no effect otherwise.")
 	flag.IntVar(&numProcs, "procs", 0, "Use this flag to specify the number of processes to run on.")
-	flag.IntVar(&channelSize, "channel-size", 100000, "Use this flag to specify the number of values in the buffered channel.")
+	flag.IntVar(&channelSize, "channel-size", 1000000, "Use this flag to specify the number of values in the buffered channel.")
 	flag.BoolVar(&crashIfParseFail, "fatal-parse-errors", false, "Fatally crash if a certificate cannot be parsed. Log by default.")
 	flag.Parse()
 }
