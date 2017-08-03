@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"encoding/base64"
 	"encoding/json"
 	"flag"
@@ -12,6 +11,7 @@ import (
 	"os"
 	"runtime"
 	"sync"
+	"io"
 )
 
 var ( //flags
@@ -49,16 +49,11 @@ func CustomMarshal(validation interface{}, lintResult *lints.ZLintResult, raw []
 	})
 }
 
-func ProcessCertificate(in <-chan []byte, out chan<- []byte, wg *sync.WaitGroup) {
+func ProcessCertificate(in <-chan interface{}, out chan<- []byte, wg *sync.WaitGroup) {
 	log.Info("Processing certificates...")
 	defer wg.Done()
 	for raw := range in {
-		var zdbDataInterface interface{}
-		err := json.Unmarshal(raw, &zdbDataInterface)
-		if err != nil {
-			//Handle error
-		}
-		zdbData := zdbDataInterface.(map[string]interface{})
+		zdbData := raw.(map[string]interface{})
 		raw := zdbData["raw"]
 		validation := zdbData["validation"]
 		der, err := base64.StdEncoding.DecodeString(raw.(string))
@@ -80,17 +75,20 @@ func ProcessCertificate(in <-chan []byte, out chan<- []byte, wg *sync.WaitGroup)
 	} //
 }
 
-func ReadCertificate(out chan<- []byte, filename string, wg *sync.WaitGroup) {
+func ReadCertificate(out chan<- interface{}, filename string, wg *sync.WaitGroup) {
 	log.Info("Reading certificates...")
 	defer wg.Done()
 	if file, err := os.Open(filename); err == nil {
 		defer file.Close()
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			out <- scanner.Bytes()
-		}
-		if err = scanner.Err(); err != nil {
-			log.Fatal("Error with scanning file: ", err)
+		d := json.NewDecoder(file)
+		for {
+			var f interface{}
+			if err := d.Decode(&f); err == io.EOF {
+				break
+			} else if err != nil {
+				// handle error
+			}
+			out <- f
 		}
 	} else {
 		log.Fatal("Error reading file: ", err)
@@ -127,7 +125,7 @@ func main() {
 	}
 
 	//Initialize Channels
-	certs := make(chan []byte, channelSize)
+	certs := make(chan interface{}, channelSize)
 	jsonOut := make(chan []byte, channelSize)
 
 	var readerWG sync.WaitGroup
