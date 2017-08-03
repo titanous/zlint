@@ -7,6 +7,7 @@ import (
 	"flag"
 	log "github.com/Sirupsen/logrus"
 	"github.com/zmap/zcrypto/x509"
+	"github.com/zmap/zlint/lints"
 	"github.com/zmap/zlint/zlint"
 	"os"
 	"runtime"
@@ -29,19 +30,38 @@ func init() {
 	flag.BoolVar(&prettyPrint, "list-lints-json", false, "Use this flag to print supported lints in JSON format, one per line")
 	flag.IntVar(&numCertThreads, "cert-threads", 1, "Use this flag to specify the number of threads in -threads mode.  This has no effect otherwise.")
 	flag.IntVar(&numProcs, "procs", 0, "Use this flag to specify the number of processes to run on.")
-	flag.IntVar(&channelSize, "channel-size", 1000, "Use this flag to specify the number of values in the buffered channel.")
+	flag.IntVar(&channelSize, "channel-size", 100000, "Use this flag to specify the number of values in the buffered channel.")
 	flag.BoolVar(&crashIfParseFail, "fatal-parse-errors", false, "Fatally crash if a certificate cannot be parsed. Log by default.")
 	flag.Parse()
 }
 
-func ProcessCertificate(in <-chan string, out chan<- []byte, wg *sync.WaitGroup) {
+func CustomMarshal(validation interface{}, lintResult *lints.ZLintResult, raw []byte, parsed *x509.Certificate) ([]byte, error) {
+	return json.Marshal(struct {
+		Raw        []byte             `json:"raw,omitempty"`
+		Parsed     *x509.Certificate  `json:"parsed,omitempty"`
+		ZLint      *lints.ZLintResult `json:"zlint,omitempty"`
+		Validation interface{}        `json:"validation,omitempty"`
+	}{
+		Raw:        raw,
+		Parsed:     parsed,
+		ZLint:      lintResult,
+		Validation: validation,
+	})
+}
+
+func ProcessCertificate(in <-chan []byte, out chan<- []byte, wg *sync.WaitGroup) {
 	log.Info("Processing certificates...")
 	defer wg.Done()
 	for raw := range in {
-		der, err := base64.StdEncoding.DecodeString(raw)
+		var zdbDataInterface interface{}
+		err := json.Unmarshal(raw, &zdbDataInterface)
 		if err != nil {
 			//Handle error
 		}
+		zdbData := zdbDataInterface.(map[string]interface{})
+		raw := zdbData["raw"]
+		validation := zdbData["validation"]
+		der, err := base64.StdEncoding.DecodeString(raw.(string))
 		parsed, err := x509.ParseCertificate(der)
 		if err != nil { //could not parse
 			if crashIfParseFail {
@@ -51,23 +71,23 @@ func ProcessCertificate(in <-chan string, out chan<- []byte, wg *sync.WaitGroup)
 			}
 		} else { //parsed
 			zlintResult := zlint.ZLintResultTestHandler(parsed)
-			jsonResult, err := json.Marshal(zlintResult.ZLint)
+			jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
 			if err != nil {
 				log.Fatal("could not parse JSON.")
 			}
 			out <- jsonResult
 		}
-	}
+	} //
 }
 
-func ReadCertificate(out chan<- string, filename string, wg *sync.WaitGroup) {
+func ReadCertificate(out chan<- []byte, filename string, wg *sync.WaitGroup) {
 	log.Info("Reading certificates...")
 	defer wg.Done()
 	if file, err := os.Open(filename); err == nil {
 		defer file.Close()
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			out <- scanner.Text()
+			out <- scanner.Bytes()
 		}
 		if err = scanner.Err(); err != nil {
 			log.Fatal("Error with scanning file: ", err)
@@ -90,7 +110,7 @@ func WriteOutput(in <-chan []byte, outputFileName string, wg *sync.WaitGroup) {
 		}
 		defer outFile.Close()
 	}
-
+	//
 	for json := range in {
 		outFile.Write(json)
 		outFile.Write([]byte{'\n'})
@@ -107,7 +127,7 @@ func main() {
 	}
 
 	//Initialize Channels
-	certs := make(chan string, channelSize)
+	certs := make(chan []byte, channelSize)
 	jsonOut := make(chan []byte, channelSize)
 
 	var readerWG sync.WaitGroup
