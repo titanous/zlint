@@ -23,6 +23,8 @@ type ZLintResult struct {
 	WarningsPresent bool        `json:"warnings_present"`
 	ErrorsPresent   bool        `json:"errors_present"`
 	FatalsPresent   bool        `json:"fatals_present"`
+	Errors 		[]string    `json:"errors"`
+	Warnings	[]string    `json:"warnings"`
 }
 
 type LintReport struct {
@@ -252,19 +254,21 @@ func (result *ZLintResult) Execute(cert *x509.Certificate) error {
 	for _, l := range Lints {
 		res, _ := l.ExecuteTest(cert)
 		l.updateReport(result.ZLint, res)
-		result.updateErrorStatePresent(res)
+		result.updateErrorStatePresent(res, l)
 	}
 	return nil
 }
 
-func (zlintResult *ZLintResult) updateErrorStatePresent(result ResultStruct) {
+func (zlintResult *ZLintResult) updateErrorStatePresent(result ResultStruct, l *Lint) {
 	switch result.Result {
 	case Notice:
 		zlintResult.NoticesPresent = true
 	case Warn:
 		zlintResult.WarningsPresent = true
+		zlintResult.Warnings = append(zlintResult.Warnings, l.Name)
 	case Error:
 		zlintResult.ErrorsPresent = true
+		zlintResult.Errors = append(zlintResult.Errors, l.Name)
 	case Fatal:
 		zlintResult.FatalsPresent = true
 	}

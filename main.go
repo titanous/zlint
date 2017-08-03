@@ -8,10 +8,12 @@ import (
 	"github.com/zmap/zcrypto/x509"
 	"github.com/zmap/zlint/lints"
 	"github.com/zmap/zlint/zlint"
+	"io"
 	"os"
 	"runtime"
 	"sync"
-	"io"
+	"strconv"
+	"strings"
 )
 
 var ( //flags
@@ -22,11 +24,15 @@ var ( //flags
 	numProcs         int
 	channelSize      int
 	crashIfParseFail bool
+	outProcessPath	 string
 )
+
+var fileMutex sync.Mutex
 
 func init() {
 	flag.StringVar(&inPath, "input-file", "", "File path for the input certificate(s).")
 	flag.StringVar(&outPath, "output-file", "-", "File path for the output JSON.")
+	flag.StringVar(&outProcessPath, "output-process", "-", "File path for output error preprocess.")
 	flag.BoolVar(&prettyPrint, "list-lints-json", false, "Use this flag to print supported lints in JSON format, one per line")
 	flag.IntVar(&numCertThreads, "cert-threads", 1, "Use this flag to specify the number of threads in -threads mode.  This has no effect otherwise.")
 	flag.IntVar(&numProcs, "procs", 0, "Use this flag to specify the number of processes to run on.")
@@ -49,7 +55,49 @@ func CustomMarshal(validation interface{}, lintResult *lints.ZLintResult, raw []
 	})
 }
 
-func ProcessCertificate(in <-chan interface{}, out chan<- []byte, wg *sync.WaitGroup) {
+type Validation struct {
+	nssValid bool
+	nssWasValid bool
+	microsoftValid bool
+	microsoftWasValid bool
+	appleValid bool
+	appleWasValid bool
+	ctPrimaryValid bool
+	ctPrimaryWasValid bool
+}
+
+func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validationInterface interface{}) string {
+	validation := FillOutValidationStruct(validationInterface)
+	issuerDn := cert.Issuer.String()
+	numErrors := len(result.Errors)
+	numWarnings := len(result.Warnings)
+
+	var outputString string
+	outputString += strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + strconv.FormatBool(validation.microsoftValid) + "," + strconv.FormatBool(validation.microsoftWasValid) + "," + strconv.FormatBool(validation.appleValid) + "," + strconv.FormatBool(validation.appleWasValid) + "," + strconv.FormatBool(validation.ctPrimaryValid) + "," + strconv.FormatBool(validation.ctPrimaryWasValid) + "," + issuerDn + ","+  strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
+	return outputString
+}
+
+func FillOutValidationStruct(validation interface{}) *Validation {
+	v := Validation{}
+	validationMap := validation.(map[string]interface{})
+	nssMap := validationMap["nss"].(map[string]interface{})
+	msftMap := validationMap["microsoft"].(map[string]interface{})
+	appleMap := validationMap["apple"].(map[string]interface{})
+	ctMap := validationMap["google_ct_primary"].(map[string]interface{})
+
+	v.nssValid = nssMap["valid"].(bool)
+	v.nssWasValid = nssMap["was_valid"].(bool)
+	v.microsoftValid = msftMap["valid"].(bool)
+	v.microsoftWasValid = msftMap["was_valid"].(bool)
+	v.appleValid = appleMap["valid"].(bool)
+	v.appleWasValid = appleMap["was_valid"].(bool)
+	v.ctPrimaryValid = ctMap["valid"].(bool)
+	v.ctPrimaryWasValid = ctMap["was_valid"].(bool)
+
+	return &v
+}
+
+func ProcessCertificate(in <-chan interface{}, out chan<- []byte, processOut chan<- string, wg *sync.WaitGroup) {
 	log.Info("Processing certificates...")
 	defer wg.Done()
 	for raw := range in {
@@ -66,6 +114,8 @@ func ProcessCertificate(in <-chan interface{}, out chan<- []byte, wg *sync.WaitG
 			}
 		} else { //parsed
 			zlintResult := zlint.ZLintResultTestHandler(parsed)
+			processedString := MakeIssuerString(parsed, zlintResult, validation)
+			processOut <- processedString
 			jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
 			if err != nil {
 				log.Fatal("could not parse JSON.")
@@ -115,6 +165,24 @@ func WriteOutput(in <-chan []byte, outputFileName string, wg *sync.WaitGroup) {
 	}
 }
 
+func WriteProcessedFile(in <-chan string, outputFileName string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var outFile *os.File
+	var err error
+	if outputFileName == "" || outputFileName == "-" {
+		outFile = os.Stdout
+	} else {
+		outFile, err = os.Create(outputFileName)
+		if err != nil {
+			log.Fatal("unable to create output file: ", err)
+		}
+		defer outFile.Close()
+	}
+	for outString := range in {
+		outFile.WriteString(outString)
+	}
+}
+
 func main() {
 	log.SetLevel(log.InfoLevel)
 	runtime.GOMAXPROCS(numProcs)
@@ -127,20 +195,24 @@ func main() {
 	//Initialize Channels
 	certs := make(chan interface{}, channelSize)
 	jsonOut := make(chan []byte, channelSize)
+	processOut := make(chan string, channelSize)
 
 	var readerWG sync.WaitGroup
 	var procWG sync.WaitGroup
 	var writerWG sync.WaitGroup
+	var processWg sync.WaitGroup
 
 	readerWG.Add(1)
 	writerWG.Add(1)
+	processWg.Add(1)
 
 	go ReadCertificate(certs, inPath, &readerWG)
 	go WriteOutput(jsonOut, outPath, &writerWG)
+	go WriteProcessedFile(processOut, outProcessPath, &processWg)
 
 	for i := 0; i < numCertThreads; i++ {
 		procWG.Add(1)
-		go ProcessCertificate(certs, jsonOut, &procWG)
+		go ProcessCertificate(certs, jsonOut, processOut, &procWG)
 	}
 
 	go func() {
