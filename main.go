@@ -97,7 +97,7 @@ func FillOutValidationStruct(validation interface{}) *Validation {
 	return &v
 }
 
-func ProcessCertificate(in <-chan interface{}, out chan<- []byte, processOut chan<- string, outProcessFile *os.File, wg *sync.WaitGroup) {
+func ProcessCertificate(in <-chan interface{}, out chan<- []byte, outFile *os.File, outProcessFile *os.File, wg *sync.WaitGroup) {
 	log.Info("Processing certificates...")
 	defer wg.Done()
 	for raw := range in {
@@ -115,14 +115,15 @@ func ProcessCertificate(in <-chan interface{}, out chan<- []byte, processOut cha
 		} else { //parsed
 			zlintResult := zlint.ZLintResultTestHandler(parsed)
 			processedString := MakeIssuerString(parsed, zlintResult, validation)
-			fileMutex.Lock()
-			outProcessFile.WriteString(processedString)
-			fileMutex.Unlock()
 			jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
 			if err != nil {
 				log.Fatal("could not parse JSON.")
 			}
-			out <- jsonResult
+			fileMutex.Lock()
+			outProcessFile.WriteString(processedString)
+			outFile.Write(jsonResult)
+			outFile.Write([]byte{'\n'})
+			fileMutex.Unlock()
 		}
 	} //
 }
@@ -149,22 +150,22 @@ func ReadCertificate(out chan<- interface{}, filename string, wg *sync.WaitGroup
 
 func WriteOutput(in <-chan []byte, outputFileName string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var outFile *os.File
-	var err error
-	if outputFileName == "" || outputFileName == "-" {
-		outFile = os.Stdout
-	} else {
-		outFile, err = os.Create(outputFileName)
-		if err != nil {
-			log.Fatal("Unable to create output file: ", err)
-		}
-		defer outFile.Close()
-	}
-	//
-	for json := range in {
-		outFile.Write(json)
-		outFile.Write([]byte{'\n'})
-	}
+	//var outFile *os.File
+	//var err error
+	//if outputFileName == "" || outputFileName == "-" {
+	//	outFile = os.Stdout
+	//} else {
+	//	outFile, err = os.Create(outputFileName)
+	//	if err != nil {
+	//		log.Fatal("Unable to create output file: ", err)
+	//	}
+	//	defer outFile.Close()
+	//}
+	////
+	//for json := range in {
+	//	outFile.Write(json)
+	//	outFile.Write([]byte{'\n'})
+	//}
 }
 
 func WriteProcessedFile(in <-chan string, outputFileName string, wg *sync.WaitGroup) {
@@ -213,13 +214,18 @@ func main() {
 		log.Fatal("could not create process file")
 	}
 
+	outFile, err := os.Create(outPath)
+	if err != nil {
+		log.Fatal("could not create output file")
+	}
+
 	go ReadCertificate(certs, inPath, &readerWG)
 	go WriteOutput(jsonOut, outPath, &writerWG)
 	go WriteProcessedFile(processOut, outProcessPath, &processWg)
 
 	for i := 0; i < numCertThreads; i++ {
 		procWG.Add(1)
-		go ProcessCertificate(certs, jsonOut, processOut, processFile, &procWG)
+		go ProcessCertificate(certs, jsonOut, outFile, processFile, &procWG)
 	}
 
 	go func() {
