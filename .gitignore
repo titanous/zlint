@@ -118,3 +118,7 @@ lintprint/lintprint
 zlint-main
 top1m.json
 top1.json
+
+process
+top100.json
+zlint_out
