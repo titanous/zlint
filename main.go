@@ -114,7 +114,12 @@ func ProcessCertificate(in <-chan interface{}, out chan<- []byte, outFile *os.Fi
 			}
 		} else { //parsed
 			zlintResult := zlint.ZLintResultTestHandler(parsed)
-			processedString := MakeIssuerString(parsed, zlintResult, validation)
+			var processedString string
+			if validation != nil {
+				processedString = MakeIssuerString(parsed, zlintResult, validation)
+			} else {
+				processedString = "\n"
+			}
 			jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
 			if err != nil {
 				log.Fatal("could not parse JSON.")
