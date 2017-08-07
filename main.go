@@ -73,7 +73,7 @@ func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validat
 	numWarnings := len(result.Warnings)
 
 	var outputString string
-	outputString += strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + strconv.FormatBool(validation.microsoftValid) + "," + strconv.FormatBool(validation.microsoftWasValid) + "," + strconv.FormatBool(validation.appleValid) + "," + strconv.FormatBool(validation.appleWasValid) + "," + strconv.FormatBool(validation.ctPrimaryValid) + "," + strconv.FormatBool(validation.ctPrimaryWasValid) + "," + issuerDn + ","+  strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
+	outputString += strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + strconv.FormatBool(validation.microsoftValid) + "," + strconv.FormatBool(validation.microsoftWasValid) + "," + strconv.FormatBool(validation.appleValid) + "," + strconv.FormatBool(validation.appleWasValid) + "," + strconv.FormatBool(validation.ctPrimaryValid) + "," + strconv.FormatBool(validation.ctPrimaryWasValid) + "," + "dn" + "," + issuerDn + ",enddn," +  strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
 	return outputString
 }
 
