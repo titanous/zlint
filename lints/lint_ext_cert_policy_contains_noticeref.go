@@ -21,7 +21,7 @@ func (l *noticeRefPres) Initialize() error {
 }
 
 func (l *noticeRefPres) CheckApplies(c *x509.Certificate) bool {
-	return util.IsExtInCert(c, util.CertPolicyOID)
+	return util.IsCACert(c) && util.IsExtInCert(c, util.CertPolicyOID)
 }
 
 func (l *noticeRefPres) RunTest(c *x509.Certificate) (ResultStruct, error) {
@@ -46,7 +46,7 @@ func (l *noticeRefPres) RunTest(c *x509.Certificate) (ResultStruct, error) {
 func init() {
 	RegisterLint(&Lint{
 		Name:          "w_ext_cert_policy_contains_noticeref",
-		Description:   "Compliant certificates SHOULD NOT use the noticeRef option",
+		Description:   "Conforming CAs SHOULD NOT use the noticeRef option.",
 		Providence:    "RFC 5280: 4.2.1.4",
 		EffectiveDate: util.RFC5280Date,
 		Test:          &noticeRefPres{},
