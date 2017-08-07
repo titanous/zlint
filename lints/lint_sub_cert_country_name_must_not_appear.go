@@ -23,7 +23,7 @@ func (l *subCertCountryNameMustNotAppear) RunTest(c *x509.Certificate) (ResultSt
 		if len(c.Subject.Country) == 0 {
 			return ResultStruct{Result: Pass}, nil
 		} else {
-			return ResultStruct{Result: Error}, nil
+			return ResultStruct{Result: Warn}, nil
 		}
 	}
 	return ResultStruct{Result: NA}, nil
@@ -31,7 +31,7 @@ func (l *subCertCountryNameMustNotAppear) RunTest(c *x509.Certificate) (ResultSt
 
 func init() {
 	RegisterLint(&Lint{
-		Name:          "e_sub_cert_country_name_must_not_appear",
+		Name:          "w_sub_cert_country_name_must_not_appear",
 		Description:   "Subscriber Certificate: subject:countryName MUST NOT appear if the subject:organizationName field, subject:givenName field, and subject:surname fields are absent.",
 		Providence:    "CAB: 7.1.4.2.2",
 		EffectiveDate: util.CABEffectiveDate,

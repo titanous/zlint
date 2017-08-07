@@ -244,7 +244,7 @@ type LintReport struct {
 	ESubCertProvinceMustNotAppear                        ResultStruct `json:"e_sub_cert_province_must_not_appear"`
 	ESubCertPostalCodeMustNotAppear                      ResultStruct `json:"e_sub_cert_postal_code_must_not_appear"`
 	ESubCertCountryNameMustAppear                        ResultStruct `json:"e_sub_cert_country_name_must_appear"`
-	ESubCertCountryNameMustNotAppear                     ResultStruct `json:"e_sub_cert_country_name_must_not_appear"`
+	ESubCertCountryNameMustNotAppear                     ResultStruct `json:"w_sub_cert_country_name_must_not_appear"`
 	ESubCaEKUNameConstraints                             ResultStruct `json:"e_sub_ca_eku_name_constraints"`
 	ESubCaMustNotContainAnyPolicy                        ResultStruct `json:"e_sub_ca_must_not_contain_any_policy"`
 	ESerialNumberLowEntropy                              ResultStruct `json:"e_serial_number_low_entropy"`

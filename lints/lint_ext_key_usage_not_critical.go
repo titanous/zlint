@@ -17,7 +17,7 @@ func (l *checkKeyUsageCritical) Initialize() error {
 
 func (l *checkKeyUsageCritical) CheckApplies(c *x509.Certificate) bool {
 	// Add conditions for application here
-	return util.IsExtInCert(c, util.KeyUsageOID)
+	return util.IsCACert(c) && util.IsExtInCert(c, util.KeyUsageOID)
 }
 
 func (l *checkKeyUsageCritical) RunTest(c *x509.Certificate) (ResultStruct, error) {
