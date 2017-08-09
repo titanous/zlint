@@ -71,9 +71,11 @@ func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validat
 	isCa := cert.IsCA
 	numErrors := len(result.Errors)
 	numWarnings := len(result.Warnings)
+	notBefore := cert.NotBefore.String()
+	notAfter := cert.NotAfter.String()
 
 	var outputString string
-	outputString += raw + "," + subjectPkiFingerprint + "," + signature + "," + signatureOid + "," + strconv.FormatBool(isCa) + "," + strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + "issuer_dn" + "," + issuerDn + ",end_issuer_dn, subject_dn," +  subjectDn + ",end_subject_dn," + strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
+	outputString += raw + "," + subjectPkiFingerprint + "," + notBefore + "," + notAfter + "," + signature + "," + signatureOid + "," + strconv.FormatBool(isCa) + "," + strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + "issuer_dn" + "," + issuerDn + ",end_issuer_dn, subject_dn," +  subjectDn + ",end_subject_dn," + strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
 	return outputString
 }
 
