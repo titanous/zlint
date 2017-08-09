@@ -66,7 +66,9 @@ func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validat
 	validation := FillOutValidationStruct(validationInterface)
 	raw := b64.StdEncoding.EncodeToString(cert.Raw)
 	issuerDn := cert.Issuer.String()
+	issuerDn = strings.Replace(issuerDn, ",", ":", -1)
 	subjectDn := cert.Subject.String()
+	subjectDn = strings.Replace(subjectDn, ",", ":", -1)
 	subjectPkiFingerprint := cert.SPKISubjectFingerprint.Hex()
 	signature := hex.EncodeToString(cert.Signature)
 	signatureOid := cert.SignatureAlgorithmOID.String()
@@ -77,7 +79,7 @@ func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validat
 	notAfter := cert.NotAfter.String()
 
 	var outputString string
-	outputString +=  strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + raw + "," + subjectPkiFingerprint + "," + notBefore + "," + notAfter + "," + signature + "," + signatureOid + "," + strconv.FormatBool(isCa) + "," + "issuer_dn" + "," + issuerDn + ",end_issuer_dn, subject_dn," +  subjectDn + ",end_subject_dn," + strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
+	outputString +=  strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + raw + "," + subjectPkiFingerprint + "," + notBefore + "," + notAfter + "," + signature + "," + signatureOid + "," + strconv.FormatBool(isCa) + "," + "issuer_dn" + "," + issuerDn + ",end_issuer_dn,subject_dn," +  subjectDn + ",end_subject_dn," + strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
 	return outputString
 }
 
