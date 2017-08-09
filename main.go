@@ -115,14 +115,14 @@ func ProcessCertificate(in <-chan interface{}, out chan<- []byte, outFile *os.Fi
 			} else {
 				processedString = "\n"
 			}
-			//jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
+			jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
 			if err != nil {
 				log.Fatal("could not parse JSON.")
 			}
 			fileMutex.Lock()
 			outProcessFile.WriteString(processedString)
-			//outFile.Write(jsonResult)
-			//outFile.Write([]byte{'\n'})
+			outFile.Write(jsonResult)
+			outFile.Write([]byte{'\n'})
 			fileMutex.Unlock()
 		}
 	} //
