@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	b64 "encoding/base64"
+	"encoding/hex"
 )
 
 var ( //flags
@@ -67,7 +68,7 @@ func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validat
 	issuerDn := cert.Issuer.String()
 	subjectDn := cert.Subject.String()
 	subjectPkiFingerprint := cert.SPKISubjectFingerprint.Hex()
-	signature := b64.StdEncoding.EncodeToString(cert.Signature)
+	signature := hex.EncodeToString(cert.Signature)
 	signatureOid := cert.SignatureAlgorithmOID.String()
 	isCa := cert.IsCA
 	numErrors := len(result.Errors)
