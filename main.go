@@ -67,7 +67,7 @@ func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validat
 	issuerDn := cert.Issuer.String()
 	subjectDn := cert.Subject.String()
 	subjectPkiFingerprint := cert.SPKISubjectFingerprint.Hex()
-	signature := string(cert.Signature[:])
+	signature := b64.StdEncoding.EncodeToString(cert.Signature)
 	signatureOid := cert.SignatureAlgorithmOID.String()
 	isCa := cert.IsCA
 	numErrors := len(result.Errors)
