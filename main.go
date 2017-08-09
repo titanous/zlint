@@ -58,22 +58,22 @@ func CustomMarshal(validation interface{}, lintResult *lints.ZLintResult, raw []
 type Validation struct {
 	nssValid bool
 	nssWasValid bool
-	microsoftValid bool
-	microsoftWasValid bool
-	appleValid bool
-	appleWasValid bool
-	ctPrimaryValid bool
-	ctPrimaryWasValid bool
 }
 
 func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validationInterface interface{}) string {
 	validation := FillOutValidationStruct(validationInterface)
+	raw := string(cert.Raw[:])
 	issuerDn := cert.Issuer.String()
+	subjectDn := cert.Subject.String()
+	subjectPkiFingerprint := cert.SPKISubjectFingerprint.Hex()
+	signature := string(cert.Signature[:])
+	signatureOid := cert.SignatureAlgorithmOID.String()
+	isCa := cert.IsCA
 	numErrors := len(result.Errors)
 	numWarnings := len(result.Warnings)
 
 	var outputString string
-	outputString += strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + strconv.FormatBool(validation.microsoftValid) + "," + strconv.FormatBool(validation.microsoftWasValid) + "," + strconv.FormatBool(validation.appleValid) + "," + strconv.FormatBool(validation.appleWasValid) + "," + strconv.FormatBool(validation.ctPrimaryValid) + "," + strconv.FormatBool(validation.ctPrimaryWasValid) + "," + "dn" + "," + issuerDn + ",enddn," +  strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
+	outputString += raw + "," + subjectPkiFingerprint + "," + signature + "," + signatureOid + "," + strconv.FormatBool(isCa) + "," + strconv.Itoa(numErrors) + "," + strconv.Itoa(numWarnings) + "," + strconv.FormatBool(validation.nssValid) + "," + strconv.FormatBool(validation.nssWasValid) + "," + "issuer_dn" + "," + issuerDn + ",end_issuer_dn, subject_dn," +  subjectDn + ",end_subject_dn," + strings.Join(result.Errors, ",") + "," + strings.Join(result.Warnings, ",") + "\n"
 	return outputString
 }
 
@@ -81,18 +81,9 @@ func FillOutValidationStruct(validation interface{}) *Validation {
 	v := Validation{}
 	validationMap := validation.(map[string]interface{})
 	nssMap := validationMap["nss"].(map[string]interface{})
-	msftMap := validationMap["microsoft"].(map[string]interface{})
-	appleMap := validationMap["apple"].(map[string]interface{})
-	ctMap := validationMap["google_ct_primary"].(map[string]interface{})
 
 	v.nssValid = nssMap["valid"].(bool)
 	v.nssWasValid = nssMap["was_valid"].(bool)
-	v.microsoftValid = msftMap["valid"].(bool)
-	v.microsoftWasValid = msftMap["was_valid"].(bool)
-	v.appleValid = appleMap["valid"].(bool)
-	v.appleWasValid = appleMap["was_valid"].(bool)
-	v.ctPrimaryValid = ctMap["valid"].(bool)
-	v.ctPrimaryWasValid = ctMap["was_valid"].(bool)
 
 	return &v
 }
@@ -120,14 +111,14 @@ func ProcessCertificate(in <-chan interface{}, out chan<- []byte, outFile *os.Fi
 			} else {
 				processedString = "\n"
 			}
-			jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
+			//jsonResult, err := CustomMarshal(validation, zlintResult, der, parsed)
 			if err != nil {
 				log.Fatal("could not parse JSON.")
 			}
 			fileMutex.Lock()
 			outProcessFile.WriteString(processedString)
-			outFile.Write(jsonResult)
-			outFile.Write([]byte{'\n'})
+			//outFile.Write(jsonResult)
+			//outFile.Write([]byte{'\n'})
 			fileMutex.Unlock()
 		}
 	} //
