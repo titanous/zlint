@@ -14,6 +14,7 @@ import (
 	"sync"
 	"strconv"
 	"strings"
+	b64 "encoding/base64"
 )
 
 var ( //flags
@@ -62,7 +63,7 @@ type Validation struct {
 
 func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validationInterface interface{}) string {
 	validation := FillOutValidationStruct(validationInterface)
-	raw := string(cert.Raw[:])
+	raw := b64.StdEncoding.EncodeToString(cert.Raw)
 	issuerDn := cert.Issuer.String()
 	subjectDn := cert.Subject.String()
 	subjectPkiFingerprint := cert.SPKISubjectFingerprint.Hex()
