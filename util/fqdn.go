@@ -32,7 +32,9 @@ func IsFQDN(domain string) bool {
 	if strings.Contains(domain, "@") {
 		return false
 	}
-	return govalidator.IsDNSName(domain)
+	dnsNameValidator := govalidator.IsDNSName(domain)
+	urlValidator := govalidator.IsURL(domain)
+	return dnsNameValidator || urlValidator
 }
 
 func GetAuthority(uri string) string {
