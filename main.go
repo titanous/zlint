@@ -14,8 +14,6 @@ import (
 	"sync"
 	"strconv"
 	"strings"
-	b64 "encoding/base64"
-	"encoding/hex"
 )
 
 var ( //flags
