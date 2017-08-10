@@ -64,15 +64,10 @@ type Validation struct {
 
 func MakeIssuerString(cert *x509.Certificate, result *lints.ZLintResult, validationInterface interface{}) string {
 	validation := FillOutValidationStruct(validationInterface)
-	raw := b64.StdEncoding.EncodeToString(cert.Raw)
 	issuerDn := cert.Issuer.String()
 	issuerDn = strings.Replace(issuerDn, ", ", ":", -1)
 	subjectDn := cert.Subject.String()
 	subjectDn = strings.Replace(subjectDn, ", ", ":", -1)
-	subjectPkiFingerprint := cert.SPKISubjectFingerprint.Hex()
-	signature := hex.EncodeToString(cert.Signature)
-	signatureOid := cert.SignatureAlgorithmOID.String()
-	isCa := cert.IsCA
 	numErrors := len(result.Errors)
 	numWarnings := len(result.Warnings)
 	notBefore := cert.NotBefore.String()
